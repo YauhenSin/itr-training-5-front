@@ -70,7 +70,7 @@ const Users = () => {
         </div>
         <div className="col-auto">
           <button className="btn btn-primary" onClick={fetchUsers}>
-            <i className="bi bi-arrow-clockwise"></i> Refresh
+            Refresh
           </button>
         </div>
       </div>
