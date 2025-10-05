@@ -1,30 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useAuth, API_URL } from '../context/AuthContext';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { user, loading: authLoading, refreshAuth, getAuthHeaders } = useAuth();
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/users`);
+      const response = await axios.get(`${API_URL}/users`, {
+        headers: getAuthHeaders()
+      });
       setUsers(response.data);
       setError(null);
     } catch (err) {
+      if (err.response?.status === 401) {
+        await refreshAuth();
+        navigate('/login');
+        return;
+      }
       setError('Failed to fetch users: ' + err.message);
       console.error('Error fetching users:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL, refreshAuth, navigate]);
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        navigate('/login');
+      } else {
+        fetchUsers();
+      }
+    }
+  }, [authLoading, user, navigate, fetchUsers]);
 
   const getStatusBadge = (status) => {
     const badges = {

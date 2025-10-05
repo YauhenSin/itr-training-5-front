@@ -2,17 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const Register = () => {
+const Login = () => {
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: ''
   });
-
   const [status, setStatus] = useState({ type: null, message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { login } = useAuth();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -25,8 +23,8 @@ const Register = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!formData.name || !formData.email || !formData.password) {
-      setStatus({ type: 'danger', message: 'All fields are required.' });
+    if (!formData.email || !formData.password) {
+      setStatus({ type: 'danger', message: 'Email and password are required.' });
       return;
     }
 
@@ -34,13 +32,13 @@ const Register = () => {
       setIsSubmitting(true);
       setStatus({ type: null, message: '' });
 
-      await register(formData);
+      await login(formData.email, formData.password);
 
-      setStatus({ type: 'success', message: 'Registration successful!' });
+      setStatus({ type: 'success', message: 'Logged in successfully!' });
       navigate('/');
     } catch (error) {
       const errorMessage =
-        error.response?.data?.error || 'Registration failed. Please try again.';
+        error.response?.data?.error || 'Login failed. Please try again.';
       setStatus({ type: 'danger', message: errorMessage });
     } finally {
       setIsSubmitting(false);
@@ -53,7 +51,7 @@ const Register = () => {
         <div className="col-lg-6">
           <div className="card shadow-sm">
             <div className="card-body">
-              <h2 className="card-title mb-4 text-center">Create an Account</h2>
+              <h2 className="card-title mb-4 text-center">Welcome Back</h2>
 
               {status.type && (
                 <div className={`alert alert-${status.type}`} role="alert">
@@ -62,22 +60,6 @@ const Register = () => {
               )}
 
               <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="name" className="form-label">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="form-control"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="John Doe"
-                    required
-                  />
-                </div>
-
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">
                     Email
@@ -115,7 +97,7 @@ const Register = () => {
                   className="btn btn-primary w-100"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Registering…' : 'Register'}
+                  {isSubmitting ? 'Logging in…' : 'Login'}
                 </button>
               </form>
             </div>
@@ -126,4 +108,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
