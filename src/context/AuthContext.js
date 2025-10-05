@@ -80,6 +80,16 @@ export const AuthProvider = ({ children }) => {
 
   const register = async ({ name, email, password }) => {
     const { data } = await axios.post(`${API_URL}/users`, { name, email, password });
+    if (data.token && data.user) {
+      // Backward compatibility (if endpoint later returns token)
+      saveToken(data.token);
+      setUser(data.user);
+    }
+    return data;
+  };
+
+  const activateAccount = async (tokenValue) => {
+    const { data } = await axios.post(`${API_URL}/auth/activate`, { token: tokenValue });
     saveToken(data.token);
     setUser(data.user);
     return data.user;
@@ -101,6 +111,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    activateAccount,
     logout,
     refreshAuth,
     getAuthHeaders

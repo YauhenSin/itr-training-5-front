@@ -11,6 +11,7 @@ const Register = () => {
 
   const [status, setStatus] = useState({ type: null, message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activationLink, setActivationLink] = useState(null);
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -34,14 +35,19 @@ const Register = () => {
       setIsSubmitting(true);
       setStatus({ type: null, message: '' });
 
-      await register(formData);
+      const data = await register(formData);
 
-      setStatus({ type: 'success', message: 'Registration successful!' });
-      navigate('/');
+      setStatus({
+        type: 'success',
+        message: data.message || 'Registration successful! Please check your email to activate your account.'
+      });
+      setActivationLink(data.activationUrl || null);
+      setFormData({ name: '', email: '', password: '' });
     } catch (error) {
       const errorMessage =
         error.response?.data?.error || 'Registration failed. Please try again.';
       setStatus({ type: 'danger', message: errorMessage });
+      setActivationLink(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -58,6 +64,17 @@ const Register = () => {
               {status.type && (
                 <div className={`alert alert-${status.type}`} role="alert">
                   {status.message}
+                  {activationLink && (
+                    <div className="mt-2">
+                      <button
+                        type="button"
+                        className="btn btn-outline-light btn-sm"
+                        onClick={() => navigate(`/activate?token=${new URL(activationLink).searchParams.get('token')}`)}
+                      >
+                        Activate now
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
